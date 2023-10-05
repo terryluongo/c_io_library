@@ -3,4 +3,4 @@
 - Want two pointers: one represents start of the buffer and they the other works sort of as an index so we know where we are
 - Open will malloc memory and close will free
 - Two line functions at first: int * myopen -- all it should do is call open with our parameters
-- Biggest challenge will be the buffer
+: Biggest challenge will be the buffer
