@@ -4,3 +4,6 @@
 - Open will malloc memory and close will free
 - Two line functions at first: int * myopen -- all it should do is call open with our parameters
 : Biggest challenge will be the buffer
+
+
+use uint8_t array as buffer
