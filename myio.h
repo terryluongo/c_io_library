@@ -5,11 +5,17 @@
 #include <fcntl.h>
 #include <stddef.h>
 #include <sys/stat.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 typedef struct {
 	int fd;
-	uint8_t buf[40];
-	int offset;
+	uint8_t rbuf[400];
+	int roffset;
+	uint8_t wbuf[400];
+	int woffset;
 } myfile;
 
 myfile *myopen(const char *pathname, int flags, mode_t mode );

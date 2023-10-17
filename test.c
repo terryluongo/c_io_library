@@ -11,35 +11,15 @@
 #include <fcntl.h>
 #include "myio.h"
 #define BYTES_PER_ITERATION 10240
-/*
-opendir(3)  - open directory
-readdir(3) - read directory
-closedir(3) - close directory
-getopt(3) - get option character from command line argument list
-stat(2) -  The stat() function obtains information about the file pointed to by path | probably for the -l flag
-strftime(3) - format date and time
-getpwnam(3) - something with passwords
-localtime(3) - The functions ctime(), gmtime(), and localtime() all take as an argument a time value representing the time in seconds since the Epoch (00:00:00 UTC, January 1, 1970; see time(3)).
-     When encountering an error, these functions return NULL and set errno to an appropriate value.
 
 
-1. pick directory we want
-2. opendir
-3. read contents pointer by pointer
-4. use stat to get info
-5. repeat until error or done
-6. close directory
 
-later:
-use strftime, localtime, getpwnam for -l flag
 
-p
 
-*/
 int
 main(int argc, char *argv[])
 {
-    int in, out;
+    myfile  *in, *out;
     char *src_filename, *dst_filename;
     size_t bytes_read, bytes_written;
     char buf[BYTES_PER_ITERATION];
@@ -54,15 +34,14 @@ main(int argc, char *argv[])
 
     /* open files */
     in = myopen(src_filename, O_RDONLY,0744); //changed to open()
-    if(in == -1) {
+    if(in->fd == -1) {
         perror("open");
-	printf("%d\n",in);
+
         exit(2);
     }
-    printf("%d\n",in);
-    if((out = myopen( dst_filename, O_WRONLY | O_CREAT,00744)) == -1) { //changed to open()
+    
+    if((out = myopen( dst_filename, O_WRONLY | O_CREAT,00744))->fd == -1) { //changed to open()
         perror("open");
-	printf("%d\n",out);
         exit(3);
     }
     
