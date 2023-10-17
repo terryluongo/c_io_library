@@ -13,28 +13,55 @@ myfile *myopen(const char *pathname, int flags,mode_t mode) {
 	return file;
 }
 ssize_t myread(myfile *file, void *buf, size_t count) {
-	ssize_t amountRead;	
-	// have to think about if read is called for an amount higher than the buffer 
-	// or an overlap case where we have 100 bytes left in buffer and 200 are asked for 
+	//currently works if file size is less than buffer, but is not getting exactly when we have to flush the buffer
+	//1260 byte file with 400 buffer returned a 1180 file so there is some stuff lost during the flush
+	//should get an actually descriptive text file and testing program instead of keyboard smashing
 	
-	// successive calls have to start with a first read
+
+	//tracking the start of each call, buf_max, how close it is to it
+	printf("myread called\n");
+	printf("roffset + count %lu\n",file->roffset + count);
+	printf("%d\n",buf_max);
+	
+	size_t returnCount = count;
 	int buf_amount = 0;
 
+	//first thing we have to check is if this call will go over the buf_max
+	//we have to check this before the simple case of a first read because we may have to call read to get more
 	if (file->roffset + count >= buf_max) {
 		printf("trigger flush\n");
 		buf_amount = buf_max - file->roffset;
+		// copy whatever is left into the buffer before restarting 
 		memcpy(buf,file->rbuf + file->roffset,buf_amount);
 		file->roffset = 0; 	
 	}
+	//either first call or we need more stuff
 	if (file->roffset == 0) {
-		amountRead = read(file->fd, file->rbuf, buf_max);
+		// we read bytes read into file->rbufend: need to know if the end of file is closer than buffer end 
+		file->rbufend = read(file->fd, file->rbuf, buf_max);
 	}
-
-	//  regular old advance the buffer call
 	
+	//  print what is left in the buffer
+	printf("%s\n",file->rbuf + file->roffset);	
+	
+	//copy into myread buffer the properly advanced amount from read buf
 	memcpy((char *) buf + buf_amount,file->rbuf + file->roffset,count - buf_amount);
+
+	//advance beginning of buffer pointer
 	file->roffset += count;
-	return amountRead;
+
+	//end case
+	if(file->rbufend == 0) {
+		returnCount = 0;
+	}
+	//right before end case
+	else if(file->rbufend < returnCount) {
+		returnCount = file->rbufend;
+	}
+	//retreat end of buffer pointer
+	file->rbufend -= returnCount;
+
+	return returnCount;
 }
 ssize_t mywrite(myfile *file, const void *buf, size_t count) {
 	ssize_t bytes_written;

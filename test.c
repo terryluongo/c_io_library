@@ -10,8 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "myio.h"
-#define BYTES_PER_ITERATION 10240
-
+#define BYTES_PER_ITERATION 40
 
 
 
@@ -47,6 +46,7 @@ main(int argc, char *argv[])
     
   /*   do the copy */ 
     while((bytes_read = myread(in, buf, BYTES_PER_ITERATION)) > 0) { //changed to read()
+	
         bytes_written = mywrite(out, buf, bytes_read); //changed to write()
         if(bytes_written == 0) {
             perror("write");

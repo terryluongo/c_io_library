@@ -14,6 +14,7 @@ typedef struct {
 	int fd;
 	uint8_t rbuf[400];
 	int roffset;
+	int rbufend;
 	uint8_t wbuf[400];
 	int woffset;
 } myfile;
