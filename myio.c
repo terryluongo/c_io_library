@@ -19,9 +19,9 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	
 
 	//tracking the start of each call, buf_max, how close it is to it
-	printf("myread called\n");
-	printf("roffset + count %lu\n",file->roffset + count);
-	printf("%d\n",buf_max);
+	//printf("myread called\n");
+	//printf("roffset + count %lu\n",file->roffset + count);
+	//printf("%d\n",buf_max);
 	
 	size_t returnCount = count;
 	int buf_amount = 0;
@@ -29,7 +29,7 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	//first thing we have to check is if this call will go over the buf_max
 	//we have to check this before the simple case of a first read because we may have to call read to get more
 	if (file->roffset + count >= buf_max) {
-		printf("trigger flush\n");
+		//printf("trigger flush\n");
 		buf_amount = buf_max - file->roffset;
 		// copy whatever is left into the buffer before restarting 
 		memcpy(buf,file->rbuf + file->roffset,buf_amount);
@@ -42,7 +42,7 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	}
 	
 	//  print what is left in the buffer
-	printf("%s\n",file->rbuf + file->roffset);	
+	//printf("%s\n",file->rbuf + file->roffset);	
 	
 	//copy into myread buffer the properly advanced amount from read buf
 	memcpy((char *) buf + buf_amount,file->rbuf + file->roffset,count - buf_amount);
