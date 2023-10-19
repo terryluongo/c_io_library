@@ -1,6 +1,6 @@
 #include "myio.h"
 
-#define buf_max 400
+#define buf_max 10
 myfile *myopen(const char *pathname, int flags,mode_t mode) {
 	int fd;	
 	fd = open(pathname,flags,mode);
@@ -25,13 +25,19 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	
 	size_t returnCount = count;
 	int buf_amount = 0;
-
 	//first thing we have to check is if this call will go over the buf_max
 	//we have to check this before the simple case of a first read because we may have to call read to get more
-	if (file->roffset + count >= buf_max) {
+	if (file->roffset + count == buf_max) {
+		buf_amount = count;
+		memcpy(buf,file->rbuf + file->roffset,count);
+		file->roffset=0;
+		return returnCount;
+	}
+	else if (file->roffset + count > buf_max) {
 		//printf("trigger flush\n");
 		buf_amount = buf_max - file->roffset;
 		// copy whatever is left into the buffer before restarting 
+		//printf("%s\n",file->rbuf+file->roffset);
 		memcpy(buf,file->rbuf + file->roffset,buf_amount);
 		file->roffset = 0; 	
 	}
@@ -48,7 +54,7 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	memcpy((char *) buf + buf_amount,file->rbuf + file->roffset,count - buf_amount);
 
 	//advance beginning of buffer pointer
-	file->roffset += count;
+	file->roffset += count - buf_amount;
 
 	//end case
 	if(file->rbufend == 0) {
@@ -60,7 +66,6 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	}
 	//retreat end of buffer pointer
 	file->rbufend -= returnCount;
-
 	return returnCount;
 }
 ssize_t mywrite(myfile *file, const void *buf, size_t count) {
