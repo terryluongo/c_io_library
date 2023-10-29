@@ -34,7 +34,6 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 		if(file->rbufend < buf_max) {
 			file->rbufend = -1;
 		}
-
 		memcpy(buf,file->rbuf + file->roffset,returnCount);
 		file->roffset=0;
 		
@@ -42,23 +41,22 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	}
 	
 	//check if call will exceed buffer
-	else if (file->rbufend && file->roffset + count > buf_max) {
+	else if (file->rbufend && file->roffset > 0 && file->roffset + count > buf_max) {
 		buf_amount = buf_max - file->roffset;
 		memcpy(buf,file->rbuf + file->roffset,buf_amount);
 		file->roffset = 0; 	
 	}
 
-
 	//either first call or we need more stuff
 	if (file->roffset == 0) {
-		int buf_bytes = buf_max;		
 		if(count >= buf_max) {
-			buf_bytes = count - buf_amount;
+			file->rbufend = read(file->fd, (char *) buf + buf_amount, count-buf_amount);
 		}
 
 		// we read bytes read into file->rbufend: need to know if the end of file is closer than buffer end 
-		file->rbufend = read(file->fd, file->rbuf, buf_bytes);
-
+		else {
+		file->rbufend = read(file->fd, file->rbuf, buf_max);
+		}
 		if (file->rbufend == 0) {
 			return 0;
 		}
@@ -69,15 +67,16 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	if (file->rbufend - file->roffset <= returnCount) {
 		copy_amount = file->rbufend - file->roffset;
 		returnCount = copy_amount + buf_amount;
-		file->rbufend = -1;
+		if(count < buf_max) {
+			file->rbufend = -1;
+		}
 	}
 
-	// with all of that being said, actually do the copying from buffer to buffer
-	memcpy((char *) buf + buf_amount,file->rbuf + file->roffset,copy_amount);
-
-	//advance beginning of buffer pointer
-	file->roffset += count - buf_amount;
-
+	if (count < buf_max) {
+		memcpy((char *) buf + buf_amount, file->rbuf + file->roffset, copy_amount);
+		file->roffset += count - buf_amount;
+		// with all of that being said, actually do the copying from buffer to buffer
+	}
 	return returnCount;
 }
 ssize_t mywrite(myfile *file, const void *buf, size_t count) {
