@@ -1,1 +1,9 @@
-123456789ab
+- Struct that stores the buffer itself, buffer size, how much space is left in the buffer (?), the address of a file
+- If we call read and buffer is 100 bytes big, and we call read for 2 bytes, will give back the 2 bytes and then store remaining 98
+- Want two pointers: one represents start of the buffer and they the other works sort of as an index so we know where we are
+- Open will malloc memory and close will free
+- Two line functions at first: int * myopen -- all it should do is call open with our parameters
+: Biggest challenge will be the buffer
+
+
+use uint8_t array as buffer

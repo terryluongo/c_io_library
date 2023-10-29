@@ -2,7 +2,8 @@
 
 
 
-#define buf_max 11
+
+#define buf_max 10
 myfile *myopen(const char *pathname, int flags,mode_t mode) {
 	int fd;	
 	fd = open(pathname,flags,mode);
@@ -50,14 +51,13 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 
 	//either first call or we need more stuff
 	if (file->roffset == 0) {
-		
+		int buf_bytes = buf_max;		
 		if(count >= buf_max) {
-			file->rbufend = read(file->fd,(char *) buf + buf_amount, count - buf_amount);
-			return file->rbufend;
+			buf_bytes = count - buf_amount;
 		}
 
 		// we read bytes read into file->rbufend: need to know if the end of file is closer than buffer end 
-		file->rbufend = read(file->fd, file->rbuf, buf_max);
+		file->rbufend = read(file->fd, file->rbuf, buf_bytes);
 
 		if (file->rbufend == 0) {
 			return 0;
@@ -65,15 +65,15 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	}
 
 	// if what is left is less than what we asked for, trigger end condition	
-	int amount = count - buf_amount;
+	int copy_amount = count - buf_amount;
 	if (file->rbufend - file->roffset <= returnCount) {
-		amount = file->rbufend - file->roffset;
-		returnCount = amount + buf_amount;
+		copy_amount = file->rbufend - file->roffset;
+		returnCount = copy_amount + buf_amount;
 		file->rbufend = -1;
 	}
 
 	// with all of that being said, actually do the copying from buffer to buffer
-	memcpy((char *) buf + buf_amount,file->rbuf + file->roffset,amount);
+	memcpy((char *) buf + buf_amount,file->rbuf + file->roffset,copy_amount);
 
 	//advance beginning of buffer pointer
 	file->roffset += count - buf_amount;
