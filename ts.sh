@@ -1,6 +1,6 @@
 #!/bin/bash
 make clean
-make test
+make $1
 rm dest.txt
-./test $1 dest.txt
-diff $1 dest.txt
+./$1 $2 dest.txt
+diff $2 dest.txt
