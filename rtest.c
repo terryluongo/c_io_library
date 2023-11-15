@@ -13,8 +13,6 @@
 #define BYTES_PER_ITERATION 2
 
 
-
-
 int
 main(int argc, char *argv[])
 {

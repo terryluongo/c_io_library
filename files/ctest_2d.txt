@@ -1,1 +1,0 @@
-this is another 40-byter for ctest.c   

@@ -3,6 +3,7 @@ make clean
 make wtest
 make rtest
 make ctest
+make dtest 
 
 rm dest.txt
 rm files/ctest_1d.txt
@@ -17,7 +18,11 @@ echo "wtest"
 ./wtest $1 dest.txt
 diff $1 dest.txt
 
-echo "ctest"
-./ctest 
+echo "dtest"
+./dtest
 diff files/ctest_1s.txt files/ctest_1d.txt
-diff files/ctest_2s.txt files/ctest_2d.txt
+
+#echo "ctest"
+#./ctest 
+#diff files/ctest_1s.txt files/ctest_1d.txt
+#diff files/ctest_2s.txt files/ctest_2d.txt

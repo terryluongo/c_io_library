@@ -1,13 +1,8 @@
-#ifndef HEADER_FILE
-#define HEADER_FILE
+#ifndef MYIO_HEADER //look at noes
+#define MYIO_HEADER
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <stddef.h>
-#include <sys/stat.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include <sys/stat.h>
 #include <stdio.h>
 
 typedef struct {
@@ -23,5 +18,7 @@ myfile *myopen(const char *pathname, int flags, mode_t mode );
 ssize_t myread(myfile *file, void *buf, size_t count);
 ssize_t mywrite(myfile *file, const void *buf, size_t count);
 int myclose(myfile *file);
+int myseek(myfile *file, int offset, int whence);
+int myflush(myfile *file);
 
 #endif
