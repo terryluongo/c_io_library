@@ -9,7 +9,31 @@
 
 #define BUF_MAX 10 
 
-
+// file has to be advanced forward the proper amount, 90 bytes
+// do we do it when read is called again or before write returns?
+// additionally, write is not delivering immediately, it itself has a buffer
+// 
+// keep track of total bytes requested for read, total bytes requested for write 
+// if read == total_bytes, read behaves as usual
+//
+// if write == total_bytes behaves as usual
+//
+// if read < total_bytes, lseek(local, total_bytes - read); then after, lseek(local, total_bytes + read);
+// then add read bytes
+// same by symmetry
+//
+//don't even need total_bytes, just if the opposite = 0, you do nothing
+//so just no matter what do lseek(local, -opposite_bytes); then lseek(local, opposite_bytes); and then add rw_bytes += count;
+//
+// so it would behave identically to expected with no overlap, and the rest of the function would be the same with overlap once we make initial adjustment, then just reset after 
+//
+// myseek
+// 100 buffer
+// read 10 bytes, write 20 bytes, lseek(local, -20); -> should go to 10 bytes
+// but in my version it would be at 80 bytes, write hasn't delivered yet, read filled one buffer
+// so needs to keep track of how many bytes actually have been delievered to the user and within the write buffer 
+// could have number that keeps track of total amount of bytes actually asked for by the user, would implement this pretty well, even if it is relative search just hardcode asked for amount + relative 
+// hardcode easy to implement 
 myfile *myopen(const char *pathname, int flags,mode_t mode) {
 	int fd;
 	if ((fd = open(pathname, flags, mode)) == 0) {
