@@ -7,9 +7,11 @@
 #include <string.h>
 
 
-#define BUF_MAX 10 
+#define BUF_MAX 12 
 
-
+// keep track of bytes asked for write and read
+// for each do lseek reversing and then redoing the opposite bytes asked
+// lseek local mode is absolute with total bytes + requested amount 
 myfile *myopen(const char *pathname, int flags,mode_t mode) {
 	int fd;
 	if ((fd = open(pathname, flags, mode)) == 0) {
@@ -92,6 +94,10 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 }
 
 ssize_t mywrite(myfile *file, const void *buf, size_t count) {
+	// so if we wrote for amount smaller than BUF_MAX, we have stuff in buffer
+	// then we ask for more than buffer
+	// empty buffer to write 
+	// then write remaining bytes straight to file 
 	ssize_t bytes_written;
 	int buf_amount = 0;
 

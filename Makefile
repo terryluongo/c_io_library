@@ -1,11 +1,11 @@
 myio: myio.c
-	gcc -c  -Wall -pedantic -o  myio myio.c
+	gcc -g -c  -Wall -pedantic -o  myio myio.c
 
 rtest: rtest.c
-	gcc -Wall -pedantic  -o rtest rtest.c myio.c
+	gcc -g -Wall -pedantic  -o rtest rtest.c myio.c
 
 wtest: wtest.c
-	gcc -Wall -pedantic -o wtest wtest.c myio.c
+	gcc -g -Wall -pedantic -o wtest wtest.c myio.c
 
 ctest: ctest.c
 	gcc -Wall -pedantic -o ctest ctest.c myio.c
