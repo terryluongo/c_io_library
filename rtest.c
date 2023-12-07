@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "myio.h"
-#define BYTES_PER_ITERATION 10
+#define BYTES_PER_ITERATION 2
 
 
 int
