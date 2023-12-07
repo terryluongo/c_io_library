@@ -1,5 +1,6 @@
 #!/bin/bash
 make clean
+make myio
 make wtest
 make rtest
 make ctest

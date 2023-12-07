@@ -43,10 +43,12 @@ main(int argc, char *argv[])
         perror("open");
         exit(3);
     }
-    
+//	bytes_read = read(in->fd, buf, 5);
+  //  	mywrite(out,buf,bytes_read);	
   /*   do the copy */ 
     while((bytes_read = read(in->fd, buf, BYTES_PER_ITERATION)) > 0) { //changed to read()
-	//printf("%ld\n",bytes_read);	
+	//printf("%ld\n",bytes_read);
+	
         bytes_written = mywrite(out, buf, bytes_read); //changed to write()
         if(bytes_written == 0) {
             perror("write");

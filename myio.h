@@ -7,11 +7,13 @@
 
 typedef struct {
 	int fd;
-	uint8_t rbuf[400];
+	uint8_t rbuf[4096];
 	int roffset;
 	int rbufend;
-	uint8_t wbuf[400];
+	uint8_t wbuf[4096];
 	int woffset;
+	int total_read;
+	int total_write;
 } myfile;
 
 myfile *myopen(const char *pathname, int flags, mode_t mode );
