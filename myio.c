@@ -26,6 +26,7 @@ myfile *myopen(const char *pathname, int flags,mode_t mode) {
 		file->rbufend = -2;
 		file->total_read = 0;
 		file->total_write = 0;
+		file->last_write = 0;
 	}
 	return file;
 }
@@ -33,16 +34,16 @@ myfile *myopen(const char *pathname, int flags,mode_t mode) {
 ssize_t myread(myfile *file, void *buf, size_t count) {
 	size_t returnCount = count;
 	int buf_amount = 0;
-	printf("--------------------------");
-	myseek(file, -file->total_write, SEEK_CUR);
+	//printf("--------------------------");
 	// only needs to have myseek modified when actual syscall is taking place 
 	// act on sentinel value from before and return
 	if (file->rbufend == -1) {
-		myseek(file, file->total_write, SEEK_CUR);
 		return 0;
 	}
+	// flush out write buffer; bytes need to be delievered.
+	if(file->last_write) myflush(file);
+	file->last_write = 0;
 
-		
 	//check if call will empty buffer
 	if ((file->rbufend != -2) && (file->roffset + count == BUF_MAX)) {
 		if (file->rbufend - file->roffset < returnCount) {
@@ -56,7 +57,6 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 		memcpy(buf, file->rbuf + file->roffset, returnCount);
 		file->roffset=0;
 		
-		myseek(file, file->total_write, SEEK_CUR);
 		file->total_read += returnCount;
 		return returnCount;
 	}
@@ -78,9 +78,9 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 			file->rbufend = read(file->fd, file->rbuf, BUF_MAX);
 		}
 		if (file->rbufend == 0) {
+			// copy buf_amount last bytes in buffer to return buffer
 			memcpy(buf, file->rbuf + BUF_MAX - buf_amount, buf_amount);
-			myseek(file, file->total_write, SEEK_CUR);
-			file->total_read += count;
+			file->total_read += buf_amount;
 			return buf_amount;
 		}
 	}
@@ -98,11 +98,10 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	}
 	if (count < BUF_MAX) {
 		memcpy((char *) buf + buf_amount, file->rbuf + file->roffset, copy_amount);
-		file->roffset += count - buf_amount;
+		file->roffset += copy_amount;
 	}
 
-	myseek(file, file->total_write, SEEK_CUR);
-	file->total_read += count;
+	file->total_read += returnCount;
 	return returnCount;
 }
 
@@ -113,6 +112,10 @@ ssize_t mywrite(myfile *file, const void *buf, size_t count) {
 	// then write remaining bytes straight to file 
 	ssize_t bytes_written;
 	int buf_amount = 0;
+
+	if(!(file->last_write)) myseek(file,0,SEEK_CUR);
+
+	file->last_write = 1;
 
 	//myseek(file, -file->total_read, SEEK_CUR);
 
@@ -164,15 +167,15 @@ int myclose(myfile *file) {
 
 int myseek(myfile *file, int offset, int whence) {
 	int new_offset;
-	int prev = lseek(file->fd, 0, SEEK_CUR);
-	printf("current offset: %d\n",prev);
+
 	int total_bytes = file->total_read + file->total_write;
-	
+	file->roffset = 0; //so that status of myread reflects status of myseek	
+	myflush(file);	
+
 	int absol_offset = (whence == SEEK_SET) ? offset : total_bytes + offset;
 //	printf("total bytes_write = %d\n",file->total_write);
 //	printf("total offset will be: %d \n",absol_offset);
 	new_offset = (int) lseek(file->fd, absol_offset, SEEK_SET);
-	printf("new offset: %d\n", new_offset);
 	return new_offset;
 }
 

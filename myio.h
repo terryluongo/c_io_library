@@ -14,6 +14,7 @@ typedef struct {
 	int woffset;
 	int total_read;
 	int total_write;
+	int last_write;
 } myfile;
 
 myfile *myopen(const char *pathname, int flags, mode_t mode );
