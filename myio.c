@@ -7,7 +7,7 @@
 #include <string.h>
 
 
-#define BUF_MAX 25 
+#define BUF_MAX 7 
 
 // keep track of bytes asked for write and read
 // for each do lseek reversing and then redoing the opposite bytes asked
@@ -33,10 +33,9 @@ myfile *myopen(const char *pathname, int flags,mode_t mode) {
 ssize_t myread(myfile *file, void *buf, size_t count) {
 	size_t returnCount = count;
 	int buf_amount = 0;
-	
+	printf("--------------------------");
 	myseek(file, -file->total_write, SEEK_CUR);
-	file->total_read += count;
-
+	// only needs to have myseek modified when actual syscall is taking place 
 	// act on sentinel value from before and return
 	if (file->rbufend == -1) {
 		myseek(file, file->total_write, SEEK_CUR);
@@ -58,6 +57,7 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 		file->roffset=0;
 		
 		myseek(file, file->total_write, SEEK_CUR);
+		file->total_read += returnCount;
 		return returnCount;
 	}
 	
@@ -80,6 +80,7 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 		if (file->rbufend == 0) {
 			memcpy(buf, file->rbuf + BUF_MAX - buf_amount, buf_amount);
 			myseek(file, file->total_write, SEEK_CUR);
+			file->total_read += count;
 			return buf_amount;
 		}
 	}
@@ -101,6 +102,7 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	}
 
 	myseek(file, file->total_write, SEEK_CUR);
+	file->total_read += count;
 	return returnCount;
 }
 
@@ -162,13 +164,15 @@ int myclose(myfile *file) {
 
 int myseek(myfile *file, int offset, int whence) {
 	int new_offset;
-
+	int prev = lseek(file->fd, 0, SEEK_CUR);
+	printf("current offset: %d\n",prev);
 	int total_bytes = file->total_read + file->total_write;
 	
 	int absol_offset = (whence == SEEK_SET) ? offset : total_bytes + offset;
-
+//	printf("total bytes_write = %d\n",file->total_write);
+//	printf("total offset will be: %d \n",absol_offset);
 	new_offset = (int) lseek(file->fd, absol_offset, SEEK_SET);
-
+	printf("new offset: %d\n", new_offset);
 	return new_offset;
 }
 
