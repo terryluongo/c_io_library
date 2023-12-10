@@ -5,12 +5,14 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
+#define BUF_MAX 4096
+
 typedef struct {
 	int fd;
-	uint8_t rbuf[4096];
+	uint8_t rbuf[BUF_MAX];
 	int roffset;
 	int rbufend;
-	uint8_t wbuf[4096];
+	uint8_t wbuf[BUF_MAX];
 	int woffset;
 	int total_read;
 	int total_write;

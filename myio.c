@@ -7,16 +7,15 @@
 #include <string.h>
 
 
-#define BUF_MAX 7 
+#define BUF_MAX 4096 
 
 // keep track of bytes asked for write and read
 // for each do lseek reversing and then redoing the opposite bytes asked
 // lseek local mode is absolute with total bytes + requested amount 
 myfile *myopen(const char *pathname, int flags,mode_t mode) {
 	int fd;
-	if ((fd = open(pathname, flags, mode)) == 0) {
-		perror("open");
-		exit(1);
+	if ((fd = open(pathname, flags, mode)) == -1) {
+		return(-1);
 	}
 	myfile *file;
 	if ((file = malloc(sizeof *file)) != NULL) {
@@ -143,7 +142,7 @@ ssize_t mywrite(myfile *file, const void *buf, size_t count) {
 	file->woffset = 0;
 
 	if (count - buf_amount >= BUF_MAX) {
-		bytes_written = write(file->fd, (char *) buf + buf_amount, count - buf_amount);
+		bytes_written = write(file->fd, (char *) buf + buf_amount, count - buf_amount) + buf_amount;
 	}
 	else {
 		memcpy(file->wbuf, (char *) buf + buf_amount, count - buf_amount);
