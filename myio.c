@@ -8,6 +8,8 @@
 
 
 #define BUF_MAX 4096 
+#define FILE_END -1
+#define FILE_UNINIT -2
 
 // keep track of bytes asked for write and read
 // for each do lseek reversing and then redoing the opposite bytes asked
@@ -15,14 +17,14 @@
 myfile *myopen(const char *pathname, int flags,mode_t mode) {
 	int fd;
 	if ((fd = open(pathname, flags, mode)) == -1) {
-		return(-1);
+		return(NULL);
 	}
 	myfile *file;
 	if ((file = malloc(sizeof *file)) != NULL) {
 		file->fd = fd;
 		file->roffset = 0;
 		file->woffset = 0;
-		file->rbufend = -2;
+		file->rbufend = FILE_UNINIT;
 		file->total_read = 0;
 		file->total_write = 0;
 		file->last_write = 0;
@@ -36,7 +38,7 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	//printf("--------------------------");
 	// only needs to have myseek modified when actual syscall is taking place 
 	// act on sentinel value from before and return
-	if (file->rbufend == -1) {
+	if (file->rbufend == FILE_END) {
 		return 0;
 	}
 	// flush out write buffer; bytes need to be delievered.
@@ -44,14 +46,14 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 	file->last_write = 0;
 
 	//check if call will empty buffer
-	if ((file->rbufend != -2) && (file->roffset + count == BUF_MAX)) {
+	if ((file->rbufend != FILE_UNINIT) && (file->roffset + count == BUF_MAX)) {
 		if (file->rbufend - file->roffset < returnCount) {
 			returnCount = file->rbufend - file->roffset;
 		}
 		
 		//our syscall read less than the BUF_MAX, so file is empty, trigger end condition
 		if (file->rbufend < BUF_MAX) {
-			file->rbufend = -1;
+			file->rbufend = FILE_END;
 		}
 		memcpy(buf, file->rbuf + file->roffset, returnCount);
 		file->roffset=0;
@@ -92,7 +94,7 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 		returnCount = copy_amount + buf_amount;
 
 		if (count < BUF_MAX) {
-			file->rbufend = -1;
+			file->rbufend = FILE_END;
 		}
 	}
 	if (count < BUF_MAX) {
@@ -112,7 +114,7 @@ ssize_t mywrite(myfile *file, const void *buf, size_t count) {
 	ssize_t bytes_written;
 	int buf_amount = 0;
 
-	if(!(file->last_write)) myseek(file,0,SEEK_CUR);
+	if(!(file->last_write)) myseek(file, 0, SEEK_CUR);
 
 	file->last_write = 1;
 
@@ -172,8 +174,6 @@ int myseek(myfile *file, int offset, int whence) {
 	myflush(file);	
 
 	int absol_offset = (whence == SEEK_SET) ? offset : total_bytes + offset;
-//	printf("total bytes_write = %d\n",file->total_write);
-//	printf("total offset will be: %d \n",absol_offset);
 	new_offset = (int) lseek(file->fd, absol_offset, SEEK_SET);
 	return new_offset;
 }
