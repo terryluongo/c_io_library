@@ -7,7 +7,6 @@
 #include <string.h>
 
 
-#define BUF_MAX 4096 
 #define FILE_END -1
 #define FILE_UNINIT -2
 
@@ -17,7 +16,7 @@
 myfile *myopen(const char *pathname, int flags,mode_t mode) {
 	int fd;
 	if ((fd = open(pathname, flags, mode)) == -1) {
-		return(NULL);
+		return NULL;
 	}
 	myfile *file;
 	if ((file = malloc(sizeof *file)) != NULL) {
@@ -29,6 +28,8 @@ myfile *myopen(const char *pathname, int flags,mode_t mode) {
 		file->total_write = 0;
 		file->last_write = 0;
 	}
+	else return NULL;
+
 	return file;
 }
 
