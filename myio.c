@@ -143,12 +143,14 @@ ssize_t mywrite(myfile *file, const void *buf, size_t count) {
 	bytes_written = write(file->fd, file->wbuf, BUF_MAX);
 
 	file->woffset = 0;
-
+	//1300 and 1028
+	// ~300 so this is not triggerd, just written to the buf 	
 	if (count - buf_amount >= BUF_MAX) {
 		bytes_written = write(file->fd, (char *) buf + buf_amount, count - buf_amount) + buf_amount;
 	}
 	else {
 		memcpy(file->wbuf, (char *) buf + buf_amount, count - buf_amount);
+		bytes_written += count - buf_amount;
 		file->woffset += count - buf_amount;
 	}
 

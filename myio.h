@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
-#define BUF_MAX 4096
+#define BUF_MAX 1024
 
 typedef struct {
 	int fd;
