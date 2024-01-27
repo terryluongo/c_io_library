@@ -1,1 +1,0 @@
-this is my 40 byte long file for ctest.
