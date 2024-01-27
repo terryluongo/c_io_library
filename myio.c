@@ -10,9 +10,6 @@
 #define FILE_END -1
 #define FILE_UNINIT -2
 
-// keep track of bytes asked for write and read
-// for each do lseek reversing and then redoing the opposite bytes asked
-// lseek local mode is absolute with total bytes + requested amount 
 myfile *myopen(const char *pathname, int flags,mode_t mode) {
 	int fd;
 	if ((fd = open(pathname, flags, mode)) == -1) {
@@ -36,9 +33,6 @@ myfile *myopen(const char *pathname, int flags,mode_t mode) {
 ssize_t myread(myfile *file, void *buf, size_t count) {
 	size_t returnCount = count;
 	int buf_amount = 0;
-	//printf("--------------------------");
-	// only needs to have myseek modified when actual syscall is taking place 
-	// act on sentinel value from before and return
 	if (file->rbufend == FILE_END) {
 		return 0;
 	}
@@ -108,10 +102,6 @@ ssize_t myread(myfile *file, void *buf, size_t count) {
 }
 
 ssize_t mywrite(myfile *file, const void *buf, size_t count) {
-	// so if we wrote for amount smaller than BUF_MAX, we have stuff in buffer
-	// then we ask for more than buffer
-	// empty buffer to write 
-	// then write remaining bytes straight to file 
 	ssize_t bytes_written;
 	int buf_amount = 0;
 
@@ -143,8 +133,6 @@ ssize_t mywrite(myfile *file, const void *buf, size_t count) {
 	bytes_written = write(file->fd, file->wbuf, BUF_MAX);
 
 	file->woffset = 0;
-	//1300 and 1028
-	// ~300 so this is not triggerd, just written to the buf 	
 	if (count - buf_amount >= BUF_MAX) {
 		bytes_written = write(file->fd, (char *) buf + buf_amount, count - buf_amount) + buf_amount;
 	}
@@ -154,7 +142,6 @@ ssize_t mywrite(myfile *file, const void *buf, size_t count) {
 		file->woffset += count - buf_amount;
 	}
 
-	//myseek(file, file->total_read, SEEK_CUR);
 	return bytes_written;
 }
 
